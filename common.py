@@ -21,10 +21,14 @@ def _exec_query(sql, args, keys):
 
 def _exec_update(sql, args):
     conn = _connect_db()
-    with conn.cursor() as c:
-        c.execute(sql, args)
-    conn.commit()
-    conn.close()
+    try:
+        with conn.cursor() as c:
+            c.execute(sql, args)
+        conn.commit()
+    except Exception as e:
+        raise e
+    finally:
+        conn.close()
     
 def get_server(types=None, skip=None, limit=None, anonymous=None):
     sql = 'SELECT * FROM server'
@@ -63,6 +67,10 @@ def update_server(host, _type, is_valid):
 
     _exec_update(sql, args)
         
+def create_server(host, port, anonymous_type, _type, region=None, is_valid=None):
+    sql = 'INSERT INTO server(host, port, anonymous_type, type, region, is_valid) VALUES(%s, %s, %s, %s, %s, %s)'
+    args = (host, port, anonymous_type, _type, region, is_valid)
+    _exec_update(sql, args)
 
 class ExternJsonEncoder(json.JSONEncoder):
     def default(self, obj):
